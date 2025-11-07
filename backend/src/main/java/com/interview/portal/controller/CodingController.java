@@ -83,4 +83,16 @@ public class CodingController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @PostMapping("/submit-solution")
+    public ResponseEntity<?> submitSolution(@RequestBody Map<String, String> payload) {
+        String code = payload.get("code");
+        String language = payload.get("language");
+        // In a real-world scenario, you would compile and run the code.
+        // For this example, we'll just return a mock response.
+        Map<String, String> response = new HashMap<>();
+        response.put("output", "Your " + language + " code:\n" + code);
+        response.put("expectedOutput", "This is the expected output for the problem.");
+        return ResponseEntity.ok(response);
+    }
 }

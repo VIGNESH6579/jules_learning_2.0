@@ -1,6 +1,10 @@
 package com.interview.portal.controller;
 
+import com.interview.portal.entity.CodingProblem;
+import com.interview.portal.entity.Test;
 import com.interview.portal.entity.User;
+import com.interview.portal.service.CodingService;
+import com.interview.portal.service.TestService;
 import com.interview.portal.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,48 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TestService testService;
+
+    @Autowired
+    private CodingService codingService;
+
+    // Test Management Endpoints
+
+    @PostMapping("/tests")
+    public ResponseEntity<Test> createTest(@RequestBody Test test) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(testService.createTest(test));
+    }
+
+    @PutMapping("/tests/{id}")
+    public ResponseEntity<Test> updateTest(@PathVariable Long id, @RequestBody Test test) {
+        return ResponseEntity.ok(testService.updateTest(id, test));
+    }
+
+    @DeleteMapping("/tests/{id}")
+    public ResponseEntity<Void> deleteTest(@PathVariable Long id) {
+        testService.deleteTest(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Coding Problem Management Endpoints
+
+    @PostMapping("/coding-problems")
+    public ResponseEntity<CodingProblem> createCodingProblem(@RequestBody CodingProblem problem) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(codingService.createProblem(problem));
+    }
+
+    @PutMapping("/coding-problems/{id}")
+    public ResponseEntity<CodingProblem> updateCodingProblem(@PathVariable Long id, @RequestBody CodingProblem problem) {
+        return ResponseEntity.ok(codingService.updateProblem(id, problem));
+    }
+
+    @DeleteMapping("/coding-problems/{id}")
+    public ResponseEntity<Void> deleteCodingProblem(@PathVariable Long id) {
+        codingService.deleteProblem(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {

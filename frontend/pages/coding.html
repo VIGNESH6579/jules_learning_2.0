@@ -62,17 +62,23 @@
 
                 <div class="code-editor">
                     <h3>Code Editor</h3>
+                    <select id="languageSelector">
+                        <option value="java">Java</option>
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                    </select>
                     <textarea id="codeEditor" placeholder="Write your code here..."></textarea>
                     <div class="editor-buttons">
                         <button onclick="runCode()" class="btn btn-primary">Run Code</button>
-                        <button onclick="submitCode()" class="btn btn-success">Submit</button>
                     </div>
                 </div>
             </div>
 
             <div id="output" class="output-section" style="display:none;">
-                <h3>Output</h3>
-                <pre id="outputText"></pre>
+                <h3>Your Output</h3>
+                <pre id="userOutput"></pre>
+                <h3>Expected Output</h3>
+                <pre id="expectedOutput"></pre>
             </div>
         </div>
     </div>
@@ -161,27 +167,32 @@
             }
         }
 
-        function runCode() {
+        async function runCode() {
             const code = document.getElementById('codeEditor').value;
+            const language = document.getElementById('languageSelector').value;
             if (!code.trim()) {
                 alert('Please write some code');
                 return;
             }
 
-            // Simulate code execution (in real scenario, this would be sent to backend)
-            document.getElementById('output').style.display = 'block';
-            document.getElementById('outputText').textContent = 'Code executed successfully!\n(This is a simulation)';
-        }
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch('http://localhost:8080/api/coding/submit-solution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ code, language })
+                });
+                const result = await response.json();
 
-        function submitCode() {
-            const code = document.getElementById('codeEditor').value;
-            if (!code.trim()) {
-                alert('Please write some code');
-                return;
+                document.getElementById('userOutput').textContent = result.output;
+                document.getElementById('expectedOutput').textContent = result.expectedOutput;
+                document.getElementById('output').style.display = 'block';
+            } catch (error) {
+                console.error('Error submitting code:', error);
             }
-
-            alert('Code submitted successfully!');
-            closeEditor();
         }
 
         function closeEditor() {

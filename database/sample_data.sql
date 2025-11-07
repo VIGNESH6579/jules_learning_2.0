@@ -3,10 +3,6 @@
 
 USE interview_portal;
 
--- Insert Admin User
-INSERT INTO users (email, password, name, department, year, role, status) VALUES
-('admin@portal.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/KFm', 'Admin User', 'ADMIN', 0, 'ADMIN', 'APPROVED');
-
 -- Insert Student Users
 INSERT INTO users (email, password, name, department, year, role, status) VALUES
 ('student1@portal.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/KFm', 'John Doe', 'CSE', 3, 'STUDENT', 'APPROVED'),
