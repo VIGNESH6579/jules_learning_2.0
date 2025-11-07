@@ -1,6 +1,7 @@
 package com.interview.portal.controller;
 
 import com.interview.portal.entity.CodingProblem;
+import com.interview.portal.service.CodeExecutionService;
 import com.interview.portal.service.CodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class CodingController {
 
     @Autowired
     private CodingService codingService;
+
+    @Autowired
+    private CodeExecutionService codeExecutionService;
 
     @GetMapping("/problems")
     public ResponseEntity<List<CodingProblem>> getAllProblems() {
@@ -88,11 +92,17 @@ public class CodingController {
     public ResponseEntity<?> submitSolution(@RequestBody Map<String, String> payload) {
         String code = payload.get("code");
         String language = payload.get("language");
-        // In a real-world scenario, you would compile and run the code.
-        // For this example, we'll just return a mock response.
-        Map<String, String> response = new HashMap<>();
-        response.put("output", "Your " + language + " code:\n" + code);
-        response.put("expectedOutput", "This is the expected output for the problem.");
-        return ResponseEntity.ok(response);
+
+        if ("java".equalsIgnoreCase(language)) {
+            String output = codeExecutionService.executeJavaCode(code);
+            Map<String, String> response = new HashMap<>();
+            response.put("output", output);
+            response.put("expectedOutput", "This is the expected output for the problem.");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Unsupported language: " + language);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 }

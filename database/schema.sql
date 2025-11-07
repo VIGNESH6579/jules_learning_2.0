@@ -72,12 +72,26 @@ CREATE TABLE IF NOT EXISTS tests (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     duration_minutes INT NOT NULL,
-    total_questions INT NOT NULL,
     passing_score INT DEFAULT 40,
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Test Questions Table
+CREATE TABLE IF NOT EXISTS test_questions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    test_id BIGINT NOT NULL,
+    question_type ENUM('MCQ', 'CODING') NOT NULL,
+    question_id BIGINT,
+    coding_problem_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE SET NULL,
+    FOREIGN KEY (coding_problem_id) REFERENCES coding_problems(id) ON DELETE SET NULL,
+    INDEX idx_test_id (test_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Test Results Table

@@ -3,6 +3,7 @@ package com.interview.portal.controller;
 import com.interview.portal.entity.CodingProblem;
 import com.interview.portal.entity.Test;
 import com.interview.portal.entity.User;
+import com.interview.portal.repository.TestQuestionRepository;
 import com.interview.portal.service.CodingService;
 import com.interview.portal.service.TestService;
 import com.interview.portal.service.UserService;
@@ -31,11 +32,21 @@ public class AdminController {
     @Autowired
     private CodingService codingService;
 
+    @Autowired
+    private TestQuestionRepository testQuestionRepository;
+
     // Test Management Endpoints
 
     @PostMapping("/tests")
     public ResponseEntity<Test> createTest(@RequestBody Test test) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(testService.createTest(test));
+        Test createdTest = testService.createTest(test);
+        if (test.getTestQuestions() != null) {
+            for (com.interview.portal.entity.TestQuestion tq : test.getTestQuestions()) {
+                tq.setTest(createdTest);
+                testQuestionRepository.save(tq);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTest);
     }
 
     @PutMapping("/tests/{id}")
