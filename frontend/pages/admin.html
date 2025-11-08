@@ -17,6 +17,7 @@
                 <li><a href="admin.html">Admin Panel</a></li>
                 <li><a href="#" onclick="switchTab('users')">Users</a></li>
                 <li><a href="#" onclick="switchTab('approvals')">Approvals</a></li>
+                <li><a href="#" onclick="switchTab('tests')">Tests</a></li>
                 <li><a href="#" onclick="switchTab('stats')">Statistics</a></li>
                 <li><a href="#" onclick="logout()">Logout</a></li>
             </ul>
@@ -90,6 +91,41 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Tests Tab -->
+            <div id="testsTab" class="tab-content" style="display:none;">
+                <h3>Manage Tests</h3>
+                <a href="admin-test-editor.html" class="btn btn-primary">Create New Test</a>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testsTableBody">
+                        <tr><td colspan="5">Loading tests...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalsTableBody">
+                        <tr><td colspan="5">Loading pending approvals...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 
@@ -114,7 +150,66 @@
             loadStatistics(token);
             loadAllUsers(token);
             loadPendingApprovals(token);
+            loadAllTests(token);
         });
+
+        async function loadAllTests(token) {
+            try {
+                const response = await fetch('http://localhost:8080/api/tests', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const tests = await response.json();
+                displayTestsTable(tests);
+            } catch (error) {
+                console.error('Error loading tests:', error);
+            }
+        }
+
+        function displayTestsTable(tests) {
+            const tbody = document.getElementById('testsTableBody');
+            tbody.innerHTML = '';
+
+            if (tests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No tests found</td></tr>';
+                return;
+            }
+
+            tests.forEach(test => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${test.id}</td>
+                    <td>${test.title}</td>
+                    <td>${test.durationMinutes} min</td>
+                    <td>${test.isActive ? 'Active' : 'Inactive'}</td>
+                    <td>
+                        <a href="admin-test-editor.html?id=${test.id}" class="btn btn-secondary">Edit</a>
+                        <button onclick="deleteTest(${test.id})" class="btn btn-danger">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function deleteTest(testId) {
+            if (!confirm('Are you sure you want to delete this test?')) return;
+
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`http://localhost:8080/api/admin/tests/${testId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.ok) {
+                    alert('Test deleted successfully');
+                    location.reload();
+                } else {
+                    alert('Error deleting test');
+                }
+            } catch (error) {
+                console.error('Error deleting test:', error);
+            }
+        }
 
         async function loadStatistics(token) {
             try {
@@ -270,6 +365,7 @@
             document.getElementById('statsTab').style.display = 'none';
             document.getElementById('usersTab').style.display = 'none';
             document.getElementById('approvalsTab').style.display = 'none';
+            document.getElementById('testsTab').style.display = 'none';
 
             if (tabName === 'stats') {
                 document.getElementById('statsTab').style.display = 'block';
@@ -277,6 +373,8 @@
                 document.getElementById('usersTab').style.display = 'block';
             } else if (tabName === 'approvals') {
                 document.getElementById('approvalsTab').style.display = 'block';
+            } else if (tabName === 'tests') {
+                document.getElementById('testsTab').style.display = 'block';
             }
         }
 

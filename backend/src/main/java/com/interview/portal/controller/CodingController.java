@@ -97,6 +97,7 @@ public class CodingController {
             String output = codeExecutionService.executeJavaCode(code);
             Map<String, String> response = new HashMap<>();
             response.put("output", output);
+            // TODO: Implement a proper solution for fetching the expected output
             response.put("expectedOutput", "This is the expected output for the problem.");
             return ResponseEntity.ok(response);
         } else {
