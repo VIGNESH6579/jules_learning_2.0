@@ -1,6 +1,7 @@
 package com.interview.portal.controller;
 
 import com.interview.portal.entity.CodingProblem;
+import com.interview.portal.service.CodeExecutionService;
 import com.interview.portal.service.CodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class CodingController {
 
     @Autowired
     private CodingService codingService;
+
+    @Autowired
+    private CodeExecutionService codeExecutionService;
 
     @GetMapping("/problems")
     public ResponseEntity<List<CodingProblem>> getAllProblems() {
@@ -81,6 +85,25 @@ public class CodingController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PostMapping("/submit-solution")
+    public ResponseEntity<?> submitSolution(@RequestBody Map<String, String> payload) {
+        String code = payload.get("code");
+        String language = payload.get("language");
+
+        if ("java".equalsIgnoreCase(language)) {
+            String output = codeExecutionService.executeJavaCode(code);
+            Map<String, String> response = new HashMap<>();
+            response.put("output", output);
+            // TODO: Implement a proper solution for fetching the expected output
+            response.put("expectedOutput", "This is the expected output for the problem.");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Unsupported language: " + language);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 }

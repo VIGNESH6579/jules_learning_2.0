@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tests")
@@ -27,8 +28,8 @@ public class Test {
     @Column(nullable = false)
     private Integer durationMinutes;
 
-    @Column(nullable = false)
-    private Integer totalQuestions;
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TestQuestion> testQuestions;
 
     @Column(nullable = false)
     private Integer passingScore = 40;

@@ -35,7 +35,14 @@ public class TestService {
 
     public Test createTest(Test test) {
         test.setIsActive(true);
-        return testRepository.save(test);
+        // Save the test first to get an ID
+        Test savedTest = testRepository.save(test);
+        if (test.getTestQuestions() != null) {
+            for (com.interview.portal.entity.TestQuestion tq : test.getTestQuestions()) {
+                tq.setTest(savedTest);
+            }
+        }
+        return testRepository.save(savedTest);
     }
 
     public Test updateTest(Long id, Test testDetails) {
@@ -43,9 +50,17 @@ public class TestService {
         test.setTitle(testDetails.getTitle());
         test.setDescription(testDetails.getDescription());
         test.setDurationMinutes(testDetails.getDurationMinutes());
-        test.setTotalQuestions(testDetails.getTotalQuestions());
         test.setPassingScore(testDetails.getPassingScore());
         test.setIsActive(testDetails.getIsActive());
+
+        // Update test questions
+        if (testDetails.getTestQuestions() != null) {
+            test.getTestQuestions().clear();
+            for (com.interview.portal.entity.TestQuestion tq : testDetails.getTestQuestions()) {
+                tq.setTest(test);
+                test.getTestQuestions().add(tq);
+            }
+        }
         return testRepository.save(test);
     }
 
@@ -53,7 +68,7 @@ public class TestService {
         testRepository.deleteById(id);
     }
 
-    public TestResult submitTestResult(User user, Test test, Integer score, Integer correctAnswers, 
+    public TestResult submitTestResult(User user, Test test, Integer score, Integer correctAnswers,
                                        Integer wrongAnswers, Integer skippedQuestions, Integer timeTakenSeconds) {
         TestResult result = new TestResult();
         result.setUser(user);
@@ -62,8 +77,8 @@ public class TestService {
         result.setCorrectAnswers(correctAnswers);
         result.setWrongAnswers(wrongAnswers);
         result.setSkippedQuestions(skippedQuestions);
-        result.setTotalQuestions(test.getTotalQuestions());
-        result.setPercentage((double) score / test.getTotalQuestions() * 100);
+        result.setTotalQuestions(test.getTestQuestions().size());
+        result.setPercentage((double) score / test.getTestQuestions().size() * 100);
         result.setStatus(score >= test.getPassingScore() ? TestResult.ResultStatus.PASSED : TestResult.ResultStatus.FAILED);
         result.setTimeTakenSeconds(timeTakenSeconds);
         result.setCompletedAt(LocalDateTime.now());

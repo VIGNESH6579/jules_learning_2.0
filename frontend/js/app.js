@@ -372,3 +372,178 @@ if (typeof module !== 'undefined' && module.exports) {
         StorageHelper
     };
 }
+
+// Test Editor Logic
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.endsWith('admin-test-editor.html')) {
+        initTestEditor();
+    }
+});
+
+let availableMCQs = [];
+let availableCodingProblems = [];
+let currentTestQuestions = [];
+
+async function initTestEditor() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = urlParams.get('id');
+
+    await loadAllQuestions();
+    await loadAllCodingProblems();
+    populateQuestionSelector();
+
+    const questionTypeSelector = document.getElementById('questionTypeSelector');
+    questionTypeSelector.addEventListener('change', populateQuestionSelector);
+
+    if (testId) {
+        document.getElementById('editorTitle').textContent = 'Edit Test';
+        loadTestData(testId);
+    }
+
+    const testForm = document.getElementById('testForm');
+    testForm.addEventListener('submit', saveTest);
+}
+
+async function loadAllQuestions() {
+    try {
+        // This is a placeholder. We need an endpoint to get all questions.
+        // For now, we'll just get questions from the first course.
+        const courses = await CourseService.getAllCourses();
+        if (courses.length > 0) {
+            availableMCQs = await CourseService.getCourseQuestions(courses[0].id);
+        }
+    } catch (error) {
+        console.error('Error loading MCQs:', error);
+    }
+}
+
+async function loadAllCodingProblems() {
+    try {
+        availableCodingProblems = await CodingService.getAllProblems();
+    } catch (error) {
+        console.error('Error loading coding problems:', error);
+    }
+}
+
+function populateQuestionSelector() {
+    const questionType = document.getElementById('questionTypeSelector').value;
+    const selector = document.getElementById('questionSelector');
+    selector.innerHTML = '';
+
+    if (questionType === 'MCQ') {
+        availableMCQs.forEach(q => {
+            const option = document.createElement('option');
+            option.value = q.id;
+            option.textContent = q.questionText;
+            selector.appendChild(option);
+        });
+    } else if (questionType === 'CODING') {
+        availableCodingProblems.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = p.title;
+            selector.appendChild(option);
+        });
+    }
+}
+
+function addQuestion() {
+    const questionType = document.getElementById('questionTypeSelector').value;
+    const selector = document.getElementById('questionSelector');
+    const selectedId = selector.value;
+
+    if (!selectedId) return;
+
+    let question;
+    if (questionType === 'MCQ') {
+        question = availableMCQs.find(q => q.id == selectedId);
+        currentTestQuestions.push({ questionType: 'MCQ', questionId: question.id, question: question });
+    } else if (questionType === 'CODING') {
+        question = availableCodingProblems.find(p => p.id == selectedId);
+        currentTestQuestions.push({ questionType: 'CODING', codingProblemId: question.id, codingProblem: question });
+    }
+
+    renderTestQuestions();
+}
+
+function renderTestQuestions() {
+    const container = document.getElementById('testQuestionsContainer');
+    container.innerHTML = '';
+
+    currentTestQuestions.forEach((tq, index) => {
+        const item = document.createElement('div');
+        item.className = 'test-question-item';
+        item.innerHTML = `
+            <span>${tq.questionType}: ${tq.question ? tq.question.questionText : tq.codingProblem.title}</span>
+            <button type="button" onclick="removeQuestion(${index})" class="btn btn-danger btn-sm">Remove</button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function removeQuestion(index) {
+    currentTestQuestions.splice(index, 1);
+    renderTestQuestions();
+}
+
+async function loadTestData(testId) {
+    try {
+        const test = await TestService.getTestById(testId);
+        document.getElementById('testId').value = test.id;
+        document.getElementById('title').value = test.title;
+        document.getElementById('description').value = test.description;
+        document.getElementById('durationMinutes').value = test.durationMinutes;
+        document.getElementById('passingScore').value = test.passingScore;
+        document.getElementById('isActive').checked = test.isActive;
+
+        currentTestQuestions = test.testQuestions.map(tq => {
+            return {
+                ...tq,
+                question: tq.questionType === 'MCQ' ? { id: tq.question.id, questionText: tq.question.questionText } : null,
+                codingProblem: tq.questionType === 'CODING' ? { id: tq.codingProblem.id, title: tq.codingProblem.title } : null
+            };
+        });
+        renderTestQuestions();
+    } catch (error) {
+        console.error('Error loading test data:', error);
+    }
+}
+
+async function saveTest(event) {
+    event.preventDefault();
+
+    const testId = document.getElementById('testId').value;
+    const test = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        durationMinutes: parseInt(document.getElementById('durationMinutes').value),
+        passingScore: parseInt(document.getElementById('passingScore').value),
+        isActive: document.getElementById('isActive').checked,
+        testQuestions: currentTestQuestions.map(tq => {
+            return {
+                questionType: tq.questionType,
+                question: tq.questionType === 'MCQ' ? { id: tq.questionId } : null,
+                codingProblem: tq.questionType === 'CODING' ? { id: tq.codingProblemId } : null
+            };
+        })
+    };
+
+    try {
+        if (testId) {
+            await TestService.updateTest(testId, test);
+            alert('Test updated successfully');
+        } else {
+            await TestService.createTest(test);
+            alert('Test created successfully');
+        }
+        window.location.href = 'admin.html';
+    } catch (error) {
+        console.error('Error saving test:', error);
+        alert('Error saving test');
+    }
+}
+
+function logout() {
+    AuthService.logout();
+    window.location.href = '../index.html';
+}

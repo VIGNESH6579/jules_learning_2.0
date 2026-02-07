@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Editor - Admin Panel</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>Interview Portal</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="admin.html">Admin Panel</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Test Editor Section -->
+    <section class="test-editor-section">
+        <div class="container">
+            <h2 id="editorTitle">Create New Test</h2>
+
+            <form id="testForm" class="test-form">
+                <input type="hidden" id="testId">
+
+                <div class="form-group">
+                    <label for="title">Test Title</label>
+                    <input type="text" id="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="durationMinutes">Duration (Minutes)</label>
+                    <input type="number" id="durationMinutes" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="passingScore">Passing Score (%)</label>
+                    <input type="number" id="passingScore" value="40" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="checkbox" id="isActive" checked>
+                    <label for="isActive">Is Active</label>
+                </div>
+
+                <h3>Test Questions</h3>
+                <div id="testQuestionsContainer" class="questions-container">
+                    <!-- Questions will be added here dynamically -->
+                </div>
+
+                <div class="add-question-section">
+                    <h4>Add Question</h4>
+                    <select id="questionTypeSelector">
+                        <option value="MCQ">Multiple Choice Question</option>
+                        <option value="CODING">Coding Problem</option>
+                    </select>
+                    <select id="questionSelector" class="question-selector"></select>
+                    <button type="button" onclick="addQuestion()" class="btn btn-secondary">Add</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Test</button>
+                    <a href="admin.html" class="btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Interview Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script>
+        // Logic for the test editor will be added in app.js
+    </script>
+</body>
+</html>
